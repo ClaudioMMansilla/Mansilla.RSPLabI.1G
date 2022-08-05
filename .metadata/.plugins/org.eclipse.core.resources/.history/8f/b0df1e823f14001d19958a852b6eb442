@@ -1,0 +1,17 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+
+	setbuf(stdout, NULL);
+	srand(time(NULL));
+
+	int opcion;
+	int flagCargado = 0;
+	int flagDuracion = 0;
+
+	LinkedList* movies = ll_newLinkedList();
+	LinkedList* subLista = ll_newLinkedList();
+
+	return EXIT_SUCCESS;
+}

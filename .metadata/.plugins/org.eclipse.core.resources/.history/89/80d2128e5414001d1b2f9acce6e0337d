@@ -1,0 +1,337 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include  <ctype.h>
+
+#include "controller.h"
+#include "parser.h"
+#include "Post.h"
+
+
+int controller_menuPrincipal(){
+
+    int opcion;
+
+    printf("\n           ****** MENU ******\n\n");
+    printf("1) Cargar archivo\n");
+    printf("2) Imprimir lista\n");
+    printf("3) Asignar estadisticas\n");
+    printf("4) Filtrar por mejores posteos\n");
+    printf("5) Filtrar por haters\n");
+    printf("6) Ordenar por nivel de cantidad de followers\n");
+    printf("7) mostrar mas popular\n");
+    printf("8) Salir\n");
+    printf("\n");
+
+    scanf("%d", &opcion);
+    return opcion;
+}
+
+int controller_loadFromText(char* path, LinkedList* this){
+
+    int retorno = 0;
+    if(path != NULL && this != NULL)
+    {
+        FILE* f = fopen(path, "r");
+
+        if(f == NULL)
+        {
+            printf("No se pudo abrir el archivo");
+            exit(1);
+        }
+        else
+        {
+        	parser_PostFromText(f, this);
+            printf("\nDatos importados correctamente\n");
+//            system("pause");
+        }
+        fclose(f);
+        retorno = 1;
+    }
+    return retorno;
+}
+
+int controller_saveAsText(char* path , LinkedList* this){
+
+	int retorno = 0;
+    int len =  ll_len(this);
+
+	int id;
+	char user[50];
+	int likes;
+	int dislikes;
+	int followers;
+    ePost* eBuffer = NULL;
+
+
+    FILE* pFile = fopen(path,"w") ;
+    if(pFile != NULL)
+    {
+        fprintf(pFile,"id,user,likes,dislikes,followers,");
+        for(int i=0; i<len; i++)
+        {
+        	eBuffer = (ePost*)ll_get(this,i);
+            if(eBuffer != NULL)
+            {
+            	if( (Post_getId(eBuffer, &id))
+					&& (Post_getUser(eBuffer, user))
+					&& (Post_getLikes(eBuffer, &likes))
+            	    && (Post_getDislikes(eBuffer, &dislikes))
+					&& (Post_getFollowers(eBuffer, &followers))
+				  )
+            	{
+                    fprintf(pFile,"%d,%s,%d,%d,%d,",
+                    		id,
+							user,
+							likes,
+							dislikes,
+							followers
+						    );
+            	}
+            	else
+            	{
+            		printf("Error, reintente nuevamente\n");
+            		retorno = -1;
+            		break; // romper for
+            	}
+
+            	retorno = 1;
+            }
+        }
+        fclose(pFile);
+    }
+    return retorno;
+}
+
+//int controller_loadFromBinary(char* path , LinkedList* this){
+//
+//	int retorno = 0;
+//	FILE* f;
+//
+//	if(path !=NULL && this != NULL)
+//	{
+//		f = fopen(path,"rb");
+//
+//		if(f != NULL)
+//		{
+//			parser_MoviesFromBinary(f, this);
+//			retorno = 1;
+//		}
+//		fclose(f);
+//	}
+//	return retorno;
+//}
+//
+//int controller_saveAsBinary(char* path , LinkedList* this){
+//
+//	int retorno = 0;
+//    int len =  ll_len(this);
+//
+//    eMovie* movieAux = NULL;
+//
+//    FILE* pFile = fopen(path,"wb") ;
+//    if(pFile != NULL)
+//    {
+////        fprintf(pFile,"id_peli,titulo,genero,duracion\n");
+//        for(int i=0; i<len; i++)
+//        {
+//        	movieAux = (eMovie*)ll_get(this,i);
+//            if(movieAux != NULL)
+//            {
+////            	printf("%s", movieAux->titulo);
+//                fwrite(movieAux,sizeof(eMovie),1,pFile);
+//            	retorno = 1;
+//            }
+//        	else {
+//        		printf("Error, reintente nuevamente\n");
+//        		retorno = -1;
+//        		break; // romper for
+//        	}
+//        }
+//        fclose(pFile);
+//    }
+//    return retorno;
+//}
+//
+//
+int controller_requestFileName(LinkedList* this){
+
+	int retorno = -1;
+
+	char buffer[100];
+	char answer[100];
+
+	if(this != NULL)
+	{
+		retorno = 0;
+
+		system("cls");
+		printf("\n");
+
+		fflush(stdin);
+		printf("\nIngrese 'nombre_del_archivo.csv'\n");
+		printf("(Sin espacios | Respetar mayusculas, minusculas y signos)\n\n");
+		scanf("%s", buffer);
+
+		if(strlen(buffer))
+		{
+			strcpy(answer, buffer);
+			controller_loadFromText(answer, this);
+			retorno = 1;
+		}
+	}
+	return retorno;
+}
+
+
+void controller_listar(LinkedList* this){
+
+	ePost* eBuffer = NULL;
+
+	int len = ll_len(this);
+
+	int id;
+	char user[50];
+	int likes;
+	int dislikes;
+	int followers;
+
+    if(this != NULL)
+    {
+    	system("cls");
+    	printf("\n\n");
+    	printf(" Id       user          likes   dislikes   followers   \n");
+    	printf("--------------------------------------------------------------\n");
+        for(int i=0; i < len ; i++)
+        {
+        	eBuffer = (ePost*) ll_get(this, i);
+        	Post_getId(eBuffer, &id);
+        	Post_getUser(eBuffer, user);
+        	Post_getLikes(eBuffer, &likes);
+        	Post_getDislikes(eBuffer, &dislikes);
+        	Post_getFollowers(eBuffer, &followers);
+
+    		printf("%03d | %-15s | %04d    | %04d       | %05d\n",
+    				id,
+					user,
+					likes,
+					dislikes,
+					followers
+    		);
+        }
+    }
+}
+
+
+void* controller_myRand(void* pElement){
+
+	void* buffer =(void*)pElement;
+	void* retorno = NULL;
+
+    int aleatorioLik;
+    int minLik = 600;
+    int maxLik = 5000;
+
+    int aleatorioDis;
+    int minDis = 300;
+    int maxDis = 3500;
+
+    int aleatorioFol;
+    int minFol = 10000;
+    int maxFol = 20000;
+
+    /**
+     *  likes entre 600 y 5000, dislikes con valores
+		entre 300 y 3500 y followers entre 10000 y 20000
+     */
+    if(pElement != NULL)
+    {
+    	aleatorioLik = (rand()%(maxLik - minLik +1) +minLik); // calcula numero aleatorio en el rango indicado
+    	aleatorioDis = (rand()%(maxDis - minDis +1) +minDis);
+    	aleatorioFol = (rand()%(maxFol - minFol +1) +minFol);
+
+    	// setter recibe el pElement y el valor aleatorio generado
+    	Post_setLikes(pElement, aleatorioLik);
+		Post_setDislikes(pElement, aleatorioDis);
+		Post_setFollowers(pElement, aleatorioFol);
+    	printf("%d\n", aleatorioLik);
+    	printf("%d\n", aleatorioDis);
+    	printf("%d\n", aleatorioFol);
+        retorno= buffer;
+    }
+    return retorno; // retorno el pElement con el aleatorio seteado
+}
+
+
+int controller_filtrarLikes(void* pElement){
+
+	int retorno = 0;
+	int likes;
+
+	if(pElement != NULL)
+	{
+		Post_getLikes(pElement, &likes);
+		if(likes > 4000)
+		{
+			retorno = 1;
+		}
+	}
+	return retorno;
+}
+
+int controller_filtrarDislikes(void* pElement){
+
+	int retorno = 0;
+	int likes;
+	int dislikes;
+
+	if(pElement != NULL)
+	{
+		Post_getLikes(pElement, &likes);
+		Post_getDislikes(pElement, &dislikes);
+		if(likes < dislikes)
+		{
+			retorno = 1;
+		}
+	}
+	return retorno;
+}
+
+
+int controller_getterFollowers(void* param1, void* param2){
+
+    int retorno = 0;
+    int follow1 = 0;
+    int follow2 = 0;
+
+    if(param1 != NULL && param2 != NULL)
+    {
+    	//aqui utilizar los getters que correspondan al contexto
+    	Post_getFollowers(param1, &follow1);
+		Post_getFollowers(param2, &follow2);
+
+    	// Criterio: genero DESC y duracion ASC
+        if(follow1 < follow2) // >
+        {
+            retorno = 1;
+        }
+    }
+    return retorno;
+}
+
+LinkedList* controller_sortFollowers(LinkedList* this){
+
+	LinkedList* subList = ll_newLinkedList();
+
+	if(this != NULL && subList != NULL)
+	{
+		subList = ll_clone(this);
+		if(ll_sort(subList, controller_getterFollowers, 1))
+		{
+			printf("Ha ocurrido un error, no se pudo realizar la operacion 'Ordenar lista'\n");
+		}
+
+		controller_listar(subList);
+	}
+	return subList;
+}

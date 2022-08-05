@@ -1,0 +1,13 @@
+#ifndef POST_H_
+#define POST_H_
+
+typedef struct {
+	//id, user, likes, dislikes, followers
+	int id;
+	char user[50];
+	int likes;
+	int dislikes;
+	int followers;
+}ePost;
+
+#endif /* POST_H_ */

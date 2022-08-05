@@ -1,0 +1,92 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "LinkedList.h"
+#include "parser.h"
+#include "Movie.h"
+
+// id_peli,titulo,genero,duracion
+int parser_MoviesFromText(FILE* pFile, LinkedList* this) {
+
+    int retorno = 0;
+
+    char basura[1000];
+    char id[5];
+    char titulo[200];
+    char genero[50];
+    char duracion[5];
+
+    eMovie* movieAux = NULL;
+
+    if(pFile != NULL && this != NULL)
+    {
+    	fscanf(pFile, "%s",basura);
+//		printf("%s",basura);
+
+    	do
+        {
+    		if(feof(pFile))
+    		{
+    			break;
+    		}
+
+            retorno = fscanf(pFile, "%[^,],%[^,],%[^,],%[^\n]\n",
+            		               id, titulo, genero, duracion);
+
+            if(retorno!=4)
+            {
+                printf("Error al cargar datos\n");
+                exit(1);
+            }
+            else
+            {
+            	movieAux = Movie_newParametros(id, titulo, genero, duracion);
+
+                if( movieAux != NULL)
+                {
+                    retorno = ll_add(this, movieAux);
+                }
+            }
+
+            // verificacion de carga
+//			printf("%-s | %-s\n",
+//					id,
+//					nombreApell
+//			);
+
+        }while(!feof(pFile));
+    	retorno = 1;
+    }
+    return retorno;
+}
+
+
+int parser_MoviesFromBinary(FILE* pFile , LinkedList* this){
+
+	int retorno = 0;
+	int auxiliar;
+	eMovie* movieAux = NULL;
+
+
+	if(pFile != NULL && this != NULL)
+	{
+		do
+		{
+			movieAux = Movie_new();
+			auxiliar = fread(movieAux, sizeof(eMovie),1,pFile);
+
+			if(movieAux != NULL && auxiliar == 1)
+			{
+				ll_add(this, movieAux);
+				retorno = 1;
+			}
+			else
+			{
+				free(movieAux);
+				break;
+			}
+		}while(!feof(pFile));
+
+	}
+	fclose(pFile);
+	return retorno;
+}

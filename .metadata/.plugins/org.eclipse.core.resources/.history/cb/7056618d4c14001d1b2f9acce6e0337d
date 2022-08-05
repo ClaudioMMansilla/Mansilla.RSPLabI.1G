@@ -1,0 +1,644 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include  <ctype.h>
+
+#include "controller.h"
+#include "parser.h"
+#include "Post.h"
+
+
+int controller_menuPrincipal(){
+
+    int opcion;
+
+    printf("\n           ****** MENU ******\n\n");
+    printf("1) Cargar archivo movies\n");
+    printf("2) Imprimir lista\n");
+    printf("3) Asignar estadísticas\n");
+    printf("4) Filtrar por mejores posteos\n");
+    printf("5) Filtrar por haters\n");
+    printf("6) Ordenar por nivel de cantidad de followers\n");
+    printf("7) mostrar más popular\n");
+    printf("8) Salir\n");
+    printf("\n");
+
+    scanf("%d", &opcion);
+    return opcion;
+}
+
+int controller_loadFromText(char* path, LinkedList* this){
+
+    int retorno = 0;
+    if(path != NULL && this != NULL)
+    {
+        FILE* f = fopen(path, "r");
+
+        if(f == NULL)
+        {
+            printf("No se pudo abrir el archivo");
+            exit(1);
+        }
+        else
+        {
+        	parser_PostFromText(f, this);
+            printf("\nDatos importados correctamente\n");
+//            system("pause");
+        }
+        fclose(f);
+        retorno = 1;
+    }
+    return retorno;
+}
+//
+//int controller_saveAsText(char* path , LinkedList* this){
+//
+//	int retorno = 0;
+//    int len =  ll_len(this);
+//
+//	int id = 0;
+//	char titulo[100];
+//	char genero[20];
+//	int duracion = 0;
+//    eMovie* movieAux = NULL;
+//
+//
+//    FILE* pFile = fopen(path,"w") ;
+//    if(pFile != NULL)
+//    {
+//        fprintf(pFile,"id_peli,titulo,genero,duracion\n");
+//        for(int i=0; i<len; i++)
+//        {
+//        	movieAux = (eMovie*)ll_get(this,i);
+//            if(movieAux != NULL)
+//            {
+//            	if( (Movie_getId(movieAux, &id))
+//					&& (Movie_getTitulo(movieAux, titulo))
+//					&& (Movie_getGenero(movieAux, genero))
+//            	    && (Movie_getDuracion(movieAux, &duracion))
+//				  )
+//            	{
+//                    fprintf(pFile,"%d,%s,%s,%d\n",
+//                    		id,
+//							titulo,
+//							genero,
+//							duracion
+//						    );
+//            	}
+//            	else
+//            	{
+//            		printf("Error, reintente nuevamente\n");
+//            		retorno = -1;
+//            		break; // romper for
+//            	}
+//
+//            	retorno = 1;
+//            }
+//        }
+//        fclose(pFile);
+//    }
+//    return retorno;
+//}
+//
+//int controller_loadFromBinary(char* path , LinkedList* this){
+//
+//	int retorno = 0;
+//	FILE* f;
+//
+//	if(path !=NULL && this != NULL)
+//	{
+//		f = fopen(path,"rb");
+//
+//		if(f != NULL)
+//		{
+//			parser_MoviesFromBinary(f, this);
+//			retorno = 1;
+//		}
+//		fclose(f);
+//	}
+//	return retorno;
+//}
+//
+//int controller_saveAsBinary(char* path , LinkedList* this){
+//
+//	int retorno = 0;
+//    int len =  ll_len(this);
+//
+//    eMovie* movieAux = NULL;
+//
+//    FILE* pFile = fopen(path,"wb") ;
+//    if(pFile != NULL)
+//    {
+////        fprintf(pFile,"id_peli,titulo,genero,duracion\n");
+//        for(int i=0; i<len; i++)
+//        {
+//        	movieAux = (eMovie*)ll_get(this,i);
+//            if(movieAux != NULL)
+//            {
+////            	printf("%s", movieAux->titulo);
+//                fwrite(movieAux,sizeof(eMovie),1,pFile);
+//            	retorno = 1;
+//            }
+//        	else {
+//        		printf("Error, reintente nuevamente\n");
+//        		retorno = -1;
+//        		break; // romper for
+//        	}
+//        }
+//        fclose(pFile);
+//    }
+//    return retorno;
+//}
+//
+//
+int controller_requestFileName(LinkedList* this){
+
+	int retorno = -1;
+
+	char buffer[100];
+	char answer[100];
+
+	if(this != NULL)
+	{
+		retorno = 0;
+
+		system("cls");
+		printf("\n");
+
+		fflush(stdin);
+		printf("\nIngrese 'nombre_del_archivo.csv'\n");
+		printf("(Sin espacios | Respetar mayusculas, minusculas y signos)\n\n");
+		scanf("%s", buffer);
+
+		if(strlen(buffer))
+		{
+			strcpy(answer, buffer);
+			controller_loadFromText(answer, this);
+			retorno = 1;
+		}
+	}
+	return retorno;
+}
+
+
+void controller_listar(LinkedList* this){
+
+	ePost* eBuffer = NULL;
+
+	int len = ll_len(this);
+
+	int id;
+	char user[50];
+	int likes;
+	int dislikes;
+	int followers;
+
+    if(this != NULL)
+    {
+    	system("cls");
+    	printf("\n\n");
+    	printf(" Id       user          likes        dislikes      followers   \n");
+    	printf("-------------------------------------------------------------------\n");
+        for(int i=0; i < len ; i++)
+        {
+        	eBuffer = (ePost*) ll_get(this, i);
+        	Post_getId(eBuffer, &id);
+        	Post_getUser(eBuffer, user);
+        	Post_getLikes(eBuffer, &likes);
+        	Post_getDislikes(eBuffer, &dislikes);
+        	Post_getFollowers(eBuffer, &followers);
+
+    		printf("%d | %-10s | %d | %d | %d\n",
+    				id,
+					user,
+					likes,
+					dislikes,
+					followers
+    		);
+        }
+    }
+}
+
+
+//void* controller_myRand(void* this){
+//
+//	void* buffer =(void*)this;
+//	void* retorno = NULL;
+//    int aleatorio;
+//    int min = 100;
+//    int max = 240;
+//
+//    if(this != NULL && min <= max)
+//    {
+//    	aleatorio = (rand()%(max - min +1) +min); // calcula numero aleatorio en el rango indicado
+//    	Movie_setDuracion(buffer,aleatorio); // setter recibe el pElement y el valor aleatorio generado
+//    	printf("%d\n", aleatorio);
+//        retorno= buffer;
+//    }
+//    return retorno; // retorno el pElement con el aleatorio seteado
+//}
+
+//int controller_listarGeneros(){
+//
+//	int opcion;
+//
+//	system("cls");
+//	printf("\n");
+//	printf("  Ingrese el genero que desea filtrar\n\n");
+//	printf("  1  	Adventure\n");
+//	printf("  2  	Drama\n");
+//	printf("  3  	Comedy\n");
+//	printf("  4  	Romance\n");
+//	printf("  5  	Documentary\n");
+//	printf("  6  	Horror\n");
+//	printf("  7  	Musical\n");
+//	printf("  8  	Animation\n");
+//	printf("  9  	Action\n");
+//	printf("  10 	Thriller\n");
+//	printf("  11 	Western\n\n");
+//
+//    scanf("%d", &opcion);
+//    return opcion;
+//}
+//
+//int controller_filtrarGenero(LinkedList* this){
+//
+//	int retorno = 0;
+//	LinkedList* listaFiltrada = NULL;
+//
+//	switch(controller_listarGeneros())
+//	{
+//	case 1:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenAdventure);
+//		if(ll_isEmpty(listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_saveAsText("GenAdventure.csv", listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	case 2:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenDrama);
+//		if(ll_isEmpty(listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_saveAsText("GenDrama.csv", listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	case 3:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenComedy);
+//		if(ll_isEmpty(listaFiltrada) || !controller_saveAsText("GenComedy.csv", listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_listarMovies(listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	case 4:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenRomance);
+//		if(ll_isEmpty(listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_saveAsText("GenRomance.csv", listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	case 5:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenDocumentary);
+//		if(ll_isEmpty(listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_saveAsText("GenDocumentary.csv", listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	case 6:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenHorror);
+//		if(ll_isEmpty(listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_saveAsText("GenHorror.csv", listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	case 7:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenMusical);
+//		if(ll_isEmpty(listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_saveAsText("GenMusical.csv", listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	case 8:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenAnimation);
+//		if(ll_isEmpty(listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_saveAsText("GenAnimation.csv", listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	case 9:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenAction);
+//		if(ll_isEmpty(listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_saveAsText("GenAction.csv", listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	case 10:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenThriller);
+//		if(ll_isEmpty(listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_saveAsText("GenThriller.csv", listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	case 11:
+//		listaFiltrada = ll_filter(this, controller_FiltrarGenWestern);
+//		if(ll_isEmpty(listaFiltrada))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion\n");
+//			break;
+//		}
+//		controller_saveAsText("GenWestern.csv", listaFiltrada);
+//		retorno = 1;
+//		break;
+//
+//	default:
+//		printf("La opción seleccionada es incorrecta");
+//		break;
+//	}
+//
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenAdventure(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Adventure")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenDrama(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Drama")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenComedy(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Comedy")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenRomance(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Romance")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenDocumentary(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Documentary")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenHorror(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Horror")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenMusical(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Musical")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenAnimation(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Animation")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenAction(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Action")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenThriller(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Thriller")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+//int controller_FiltrarGenWestern(void* this){
+//
+//	int retorno = 0;
+//	char genero[100];
+//
+//	if(this != NULL)
+//	{
+//		Movie_getGenero(this, genero);
+//		if(strcmp(genero, "Western")==0)
+//		{
+//			retorno = 1;
+//		}
+//	}
+//	return retorno;
+//}
+//
+///**
+// * 5) Mostrar duraciones: Se deberá mostrar por pantalla un listado de las películas ordenadas
+// * por género y dentro de las del mismo género que aparezcan ordenadas por duración descendente.
+// *
+// *  elementI = ll_get(this, i);
+//	elementJ = ll_get(this, j);
+//
+//	if(((pFunc(elementI, elementJ)) > 0 && order)
+//			|| ((pFunc(elementI, elementJ)) < 0 && !order))
+//	{
+//		auxElement = elementI;
+//		ll_set(this, i, elementJ);
+//		ll_set(this, j, auxElement);
+//	}
+// */
+//
+///**
+// * return se utiliza criterio de return de strcmp
+// */
+//int controller_getGeneroDuracion(void* param1, void* param2){
+//
+//    int retorno = 0;
+//    int duracion1 = 0;
+//    int duracion2 = 0;
+//    char genero1[20];
+//    char genero2[20];
+//
+//    if(param1 != NULL && param2 != NULL)
+//    {
+//    	//aqui utilizar los getters que correspondan al contexto
+//    	Movie_getGenero(param1, genero1);
+//    	Movie_getGenero(param2, genero2);
+//    	Movie_getDuracion(param1, &duracion1);
+//    	Movie_getDuracion(param2, &duracion2);
+//
+//    	// Criterio: genero DESC y duracion ASC
+//        if( ((strcmp(genero1, genero2)==0) && duracion1 > duracion2)
+//        	  || (strcmp(genero1, genero2)<0)) // >
+//        {
+//            retorno = 1;
+//        }
+//        else
+//        {	// Criterio: genero ASC y duracion DESC
+//            if( ((strcmp(genero1, genero2)==0) && duracion1 < duracion2)
+//              	  || (strcmp(genero1, genero2)>0)) // <
+//            {
+//            	retorno = -1;
+//            }
+//        }
+//    }
+//    return retorno;
+//}
+//
+//LinkedList* controller_sortGeneroDuracion(LinkedList* this){
+//
+//	LinkedList* subList = ll_newLinkedList();
+//
+//	if(this != NULL && subList != NULL)
+//	{
+//		subList = ll_clone(this);
+//		if(ll_sort(subList, controller_getGeneroDuracion, 0))
+//		{
+//			printf("Ha ocurrido un error, no se pudo realizar la operacion 'Ordenar lista'\n");
+//		}
+//
+//		controller_listarMovies(subList);
+//	}
+//	return subList;
+//}

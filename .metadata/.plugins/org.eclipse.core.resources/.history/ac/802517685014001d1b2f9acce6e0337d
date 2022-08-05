@@ -1,0 +1,106 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include "LinkedList.h"
+#include "Controller.h"
+#include "Parser.h"
+#include "Post.h"
+
+int main(void) {
+
+	setbuf(stdout, NULL);
+	srand(time(NULL));
+
+	int opcion;
+	int flagCargado = 0;
+	int flagDuracion = 0;
+
+	LinkedList* posteos = ll_newLinkedList();
+	LinkedList* subLista = ll_newLinkedList();
+
+	do
+	    {
+	    	system("cls");
+	        switch(controller_menuPrincipal())
+	        {
+	        case 1:
+	        	flagCargado = controller_requestFileName(posteos);
+	        	if(!flagCargado)
+	        	{
+	        		printf("Hubo un error, reintente nuevamente\n");
+	        	}
+	        	system("pause");
+	            break;
+
+	        case 2:
+	        	if(!flagCargado)
+	        	{
+	        		printf("Primero debe cargar datos (opcion 1)\n");
+	        		break;
+	        	}
+	        	controller_listar(posteos);
+	        	system("pause");
+	            break;
+
+	        case 3:
+	        	if(!flagCargado)
+	        	{
+	        		printf("Primero debe cargar datos (opcion 1)\n");
+	        		break;
+	        	}
+	        	posteos = ll_map(posteos, controller_myRand);
+				flagDuracion = 1;
+				system("pause");
+				break;
+
+	        case 4:
+	        	if(!flagCargado || !flagDuracion)
+	        	{
+	        		printf("Primero debe cargar datos (opcion 1) y asignar estadisticas (opcion 3)\n");
+	        		break;
+	        	}
+	        	controller_filtrarLikes(posteos);
+	        	system("pause");
+	            break;
+
+//	        case 5:
+//	        	if(!flagCargado || !flagDuracion)
+//	        	{
+//	        		printf("Primero debe cargar datos (opcion 1) y asignar tiempos (opcion 3)\n");
+//	        		break;
+//	        	}
+//	        	subLista = controller_sortGeneroDuracion(posteos);
+//	        	system("pause");
+//	            break;
+//
+//	        case 6:
+//	        	if(!flagCargado || !flagDuracion)
+//	        	{
+//	        		printf("Primero debe cargar datos (opcion 1) y asignar tiempos (opcion 3)\n");
+//	        		break;
+//	        	}
+//	    		if(!controller_saveAsText("listaByGeneroDuracion.csv", subLista))
+//	    		{
+//	    			printf("Ha ocurrido un error, no se pudo generar archivo .csv\n");
+//	    			break;
+//	    		}
+//	    		system("pause");
+//	            break;
+//
+//	        case 7:
+//	            opcion = 1;
+//	            break;
+//
+	        case 8:
+	        	opcion = 1;
+	            break;
+
+	        default:
+	            printf("Ingreso Invalido!\n");
+	            break;
+	        }
+
+	    }while(opcion != 1);
+
+		return EXIT_SUCCESS;
+}

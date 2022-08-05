@@ -1,0 +1,4 @@
+
+
+int parser_MoviesFromText(FILE* pFile, LinkedList* this);
+int parser_MoviesFromBinary(FILE* pFile , LinkedList* this);
